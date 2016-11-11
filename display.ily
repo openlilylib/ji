@@ -56,7 +56,7 @@ jiNote =
        (set! ji-duration dur))
 
    (let*
-     ;; note as pair of semitone-interval and cent deviation
+    ;; note as pair of semitone-interval and cent deviation
     ((ji-note (ratio->step-deviation (/ (car ratio) (cdr ratio))))
      ;; LilyPond pitch as defined by the ratio
      (pitch-ratio (semitones->pitch (car ji-note)))
@@ -78,14 +78,22 @@ jiNote =
        (list
         ;; Add cent deviation above note
         (make-music
-              'TextScriptEvent
-              'direction 1
-              'text (format-cent cent))
+         'TextScriptEvent
+         'direction 1
+         'tweaks
+         (list 
+          '(font-size . -3.5)
+          '(self-alignment-X . -0.25))
+         'text (format-cent cent))
         ;; Add ratio below note
-         (make-music
-          'TextScriptEvent
-          'direction -1
-          'text (format-ratio ratio)))
+        (make-music
+         'TextScriptEvent
+         'direction -1
+         'tweaks
+         (list 
+          '(font-size . -3.5)
+          '(self-alignment-X . -0.25))
+         'text (format-ratio ratio)))
        'pitch
        pitch-effective
        'duration
