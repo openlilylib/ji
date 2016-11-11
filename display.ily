@@ -37,6 +37,32 @@
 #(define (format-ratio ratio)
    (format "(~a/~a)" (car ratio) (cdr ratio)))
 
+% Produce the text scripts indicating the ji pitch
+#(define (ji-articulations ratio cent)
+   (let
+    ((artics
+      (list
+       ;; Add cent deviation above note
+       (make-music
+        'TextScriptEvent
+        'direction 1
+        'tweaks
+        (list
+         '(font-size . -3.5)
+         '(self-alignment-X . -0.25))
+        'text (format-cent cent))
+       ;; Add ratio below note
+       (make-music
+        'TextScriptEvent
+        'direction -1
+        'tweaks
+        (list
+         '(font-size . -3.5)
+         '(self-alignment-X . -0.25))
+        'text (format-ratio ratio)))))
+    artics))
+
+
 % Produce a note in Just Intonation.
 % If fund(amental) is given change the fundamental to calculate pitches from
 % if dur(ation) is given change the duration.
@@ -75,25 +101,7 @@ jiNote =
       (make-music
        'NoteEvent
        'articulations
-       (list
-        ;; Add cent deviation above note
-        (make-music
-         'TextScriptEvent
-         'direction 1
-         'tweaks
-         (list 
-          '(font-size . -3.5)
-          '(self-alignment-X . -0.25))
-         'text (format-cent cent))
-        ;; Add ratio below note
-        (make-music
-         'TextScriptEvent
-         'direction -1
-         'tweaks
-         (list 
-          '(font-size . -3.5)
-          '(self-alignment-X . -0.25))
-         'text (format-ratio ratio)))
+       (ji-articulations ratio cent)
        'pitch
        pitch-effective
        'duration
