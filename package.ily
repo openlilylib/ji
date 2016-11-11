@@ -43,3 +43,4 @@
 
 \include "calculations.ily"
 \include "pitch.ily"
+\include "display.ily"
