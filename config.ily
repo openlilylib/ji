@@ -27,21 +27,10 @@
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\version "2.19.50"
+\version "2.19.51"
 
-#(ly:set-option 'relative-includes #t)
-\include "oll-core/package.ily"
+% Show cent deviation for note (##t)
+\registerOption ji.show.cent ##f
 
-\registerPackage ji \with {
-  maintainers = "Urs Liska <ul@openlilylib.org>"
-  version = "0.1.0"
-  short-description = "Display Just Intonation with GNU LilyPond"
-  description = "TODO!"
-
-  lilypond-min-version = "2.19.22" % To be tested!
-}
-
-\include "config.ily"
-\include "calculations.ily"
-\include "pitch.ily"
-\include "display.ily"
+% Show ratio for note (##t)
+\registerOption ji.show.ratio ##f
