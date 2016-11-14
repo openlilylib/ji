@@ -29,6 +29,44 @@
 
 \version "2.19.51"
 
+% Function to enable cross staff stems with varying noteheads.
+% (Cross staff only works when the horizontal position of the stems is
+%  close enough, which is broken by alternative note heads. The function
+%  pushes the note column of the to-be-combined note to a position where
+%  the condition is met.)
+%
+% Provided by Thomas Morley:
+% http://lists.gnu.org/archive/html/lilypond-user/2016-11/msg00555.html
+%
+pushNC =
+\override NoteColumn.X-offset =
+  #(lambda (grob)
+    (let* ((p-c (ly:grob-parent grob X))
+           (p-c-elts (ly:grob-object p-c 'elements))
+           (stems
+             (if (ly:grob-array? p-c-elts)
+                 (filter
+                   (lambda (elt)(grob::has-interface elt 'stem-interface))
+                   (ly:grob-array->list p-c-elts))
+                 #f))
+           (stems-x-exts
+             (if stems
+                 (map
+                   (lambda (stem)
+                     (ly:grob-extent
+                       stem
+                       (ly:grob-common-refpoint grob stem X)
+                       X))
+                   stems)
+                 '()))
+           (sane-ext
+             (filter interval-sane? stems-x-exts))
+           (cars (map car sane-ext)))
+    (if (pair? cars)
+        (abs (- (apply max cars)  (apply min cars)))
+        0)))
+
+
 % Functions to format the display,
 % intended to make visualization configurable
 #(define (format-cent cent)
