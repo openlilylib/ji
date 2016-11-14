@@ -34,3 +34,35 @@
 
 % Show ratio for note (##t)
 \registerOption ji.show.ratio ##f
+
+% Print the fundamental pitch (##f)
+\registerOption ji.show.fundamental ##f
+
+% Print the target pitch (##t)
+\registerOption ji.show.notehead ##t
+
+% Display resulting note with harmonics note head
+\registerOption ji.show.notehead-style #'default
+
+% Necessary to use cross staff stems with fundamental/result notation
+\registerOption ji.conf.use-cross-staff ##f
+
+% If cross-staff notation is active this is the name of the upper staff
+% where the target pitch is printed.
+% It is up to the user to create such a staff context and keep it alive.
+\registerOption ji.conf.cross-stuff.upper-name "ji-upper"
+
+useCrossStaff =
+#(define-scheme-function ()()
+   (setOption '(ji conf use-cross-staff) #t)
+   #{
+     \layout {
+       \context {
+         \PianoStaff
+         \consists #Span_stem_engraver
+       }
+     }
+   #})
+
+
+

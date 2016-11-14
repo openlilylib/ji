@@ -40,70 +40,144 @@
 %
 pushNC =
 \override NoteColumn.X-offset =
-  #(lambda (grob)
-    (let* ((p-c (ly:grob-parent grob X))
-           (p-c-elts (ly:grob-object p-c 'elements))
-           (stems
-             (if (ly:grob-array? p-c-elts)
-                 (filter
-                   (lambda (elt)(grob::has-interface elt 'stem-interface))
-                   (ly:grob-array->list p-c-elts))
-                 #f))
-           (stems-x-exts
-             (if stems
-                 (map
-                   (lambda (stem)
-                     (ly:grob-extent
-                       stem
-                       (ly:grob-common-refpoint grob stem X)
-                       X))
-                   stems)
-                 '()))
-           (sane-ext
-             (filter interval-sane? stems-x-exts))
-           (cars (map car sane-ext)))
-    (if (pair? cars)
-        (abs (- (apply max cars)  (apply min cars)))
-        0)))
+#(lambda (grob)
+   (let* ((p-c (ly:grob-parent grob X))
+          (p-c-elts (ly:grob-object p-c 'elements))
+          (stems
+           (if (ly:grob-array? p-c-elts)
+               (filter
+                (lambda (elt)(grob::has-interface elt 'stem-interface))
+                (ly:grob-array->list p-c-elts))
+               #f))
+          (stems-x-exts
+           (if stems
+               (map
+                (lambda (stem)
+                  (ly:grob-extent
+                   stem
+                   (ly:grob-common-refpoint grob stem X)
+                   X))
+                stems)
+               '()))
+          (sane-ext
+           (filter interval-sane? stems-x-exts))
+          (cars (map car sane-ext)))
+     (if (pair? cars)
+         (abs (- (apply max cars)  (apply min cars)))
+         0)))
 
 
-% Functions to format the display,
+% Functions to format the textual elements of the display,
 % intended to make visualization configurable
+%
+% TODO: Make configurable and nicer in general
 #(define (format-cent cent)
    (format "(~@f)" cent))
 
 #(define (format-ratio ratio)
    (format "(~a/~a)" (car ratio) (cdr ratio)))
 
-% Produce the text scripts indicating the ji pitch
-#(define (ji-articulations ratio cent)
+
+% Produce the text elements specifying the JI note
+% Returns a list of TextScriptEvent music expressions
+% that can be attached to the JI note chord.
+%
+% Generation of
+% - ratio
+% - cent
+% is controlled by options
+%
+% TODO:
+% Make styling and directions configurable
+#(define (ji-legend ratio cent)
    (let
     ((artics
       (list
-       ;; Add cent deviation above note
-       (make-music
-        'TextScriptEvent
-        'direction 1
-        'tweaks
-        (list
-         '(font-size . -3.5)
-         '(self-alignment-X . -0.25))
-        'text (format-cent cent))
        ;; Add ratio below note
-       (make-music
-        'TextScriptEvent
-        'direction -1
-        'tweaks
-        (list
-         '(font-size . -3.5)
-         '(self-alignment-X . -0.25))
-        'text (format-ratio ratio)))))
-    artics))
+       (if (getOption '(ji show ratio))
+           (make-music
+            'TextScriptEvent
+            'direction 1
+            'tweaks
+            (list
+             '(font-size . -3.5)
+             '(self-alignment-X . -0.25))
+            'text (format-ratio ratio))
+           #f)
+       ;; Add cent deviation above note
+       (if (getOption '(ji show cent))
+           (make-music
+            'TextScriptEvent
+            'direction 1
+            'tweaks
+            (list
+             '(font-size . -3.5)
+             '(self-alignment-X . -0.25))
+            'text (format-cent cent))
+           #f)
+       )))
+    ;; remove empty expressions
+    (delq #f artics)))
 
+% Generate set of tweaks applying to the JI note
+% Controlled by options
+#(define (ji-tweaks)
+   (let
+    ((tweaks
+      (list
+       ;; define notehead style
+       (cons (cons 'NoteHead 'style)
+         (getOption '(ji show notehead-style)))
+       ;; If we're on the upper part of a cross staff chord
+       ;; stem should always point upwards
+       ;
+       ; TODO
+       ; ideally this should check for the stem direction of the outer voice.
+       ; if \oneVoice is active the proper stem direction for the whole
+       ; cross staff chord should be determined and applied to both parts
+       ;
+       (if (getOption '(ji conf use-cross-staff))
+           (cons (cons 'Stem 'direction) 1)
+           #f)
+       )))
+    ;; remove empty expressions
+    (delq #f tweaks)))
+
+% Produce a NoteEvent with given pitch and duration,
+% to be used in the composition of chords or single notes.
+% tweaks is either a list of tweaks or an empty list
+#(define (ji-produce-note pitch duration tweaks)
+   (make-music
+    'NoteEvent
+    'tweaks tweaks
+    'pitch pitch
+    'duration duration))
+
+% Return a JI NoteEvent with styling
+#(define (ji-note pitch dur)
+   (ji-produce-note pitch dur (ji-tweaks)))
+
+% Return a simple NoteEvent
+#(define (ji-simple-note pitch dur)
+   (ji-produce-note pitch dur '()))
 
 % Produce a note in Just Intonation.
-% If fund(amental) is given change the fundamental to calculate pitches from
-% if dur(ation) is given change the duration.
+% Returns either a chord (with one or two notes) or
+% a temporary polyphony construct with two voices,
+% distributed over two staves. This is controlled by the
+% ji.conf.use-cross-staff option (default: ##f)
+% In this case the name of the secondary staff is controlled by the
+% ji.conf.cross-staff.upper-name option (default: "ji-upper"),
+% and it's the user's responsibility to provide an active context of that name.
+% Note that the fundamental pitch will continue the Voice context while the
+% resulting pitch is printed in a temporary Voice.
+%
+% If fund(amental) is given changes the fundamental to calculate pitches from
+% if dur(ation) is given changes the duration.
+% Both changes apply for later JI events as well
+%
+% Most of the behaviour and appearance is controlled by options.
+
 jiNote =
 #(define-music-function (fund dur ratio)
    ((pitch-or-dur?) (ly:duration?) fraction?)
@@ -121,26 +195,85 @@ jiNote =
 
    (let*
     ;; note as pair of semitone-interval and cent deviation
-    ((ji-note (ratio->step-deviation (/ (car ratio) (cdr ratio))))
+    ((ji-event (ratio->step-deviation (/ (car ratio) (cdr ratio))))
      ;; LilyPond pitch as defined by the ratio
-     (pitch-ratio (semitones->pitch (car ji-note)))
+     (pitch-ratio (semitones->pitch (car ji-event)))
      ;; LilyPond pitch relative to the current fundamental
      (pitch-effective
       (ly:pitch-transpose
        pitch-ratio
        ji-fundamental))
      ;; cent deviation as integer
-     (cent (cdr ji-note)))
-    ;; finally create the note with generated pitch and markup addition
-    (make-music
-     'SequentialMusic
-     'elements
-     (list
-      (make-music
-       'NoteEvent
-       'articulations
-       (ji-articulations ratio cent)
-       'pitch
-       pitch-effective
-       'duration
-       ji-duration)))))
+     (cent (cdr ji-event)))
+
+    (if (getOption '(ji conf use-cross-staff))
+        ;; Produce a temporary cross-staff section for a single note
+        #{
+          <<
+            \crossStaff {
+              #(if (getOption '(ji show fundamental))
+                   ;; If active print the fundamental in the original staff.
+                   ;; Produce a chord in order to be able to
+                   ;; display the legend.
+                   (make-music
+                    'EventChord
+                    'elements
+                    (let*
+                     ((legend
+                       (if (not (getOption '(ji show notehead)))
+                           ;; only show the legend with the fundamental
+                           ;; when the resulting pitch isn't printed
+                           (ji-legend ratio cent)
+                           (list #f)))
+                      (elts
+                       `(
+                          ;; fundamental pitch
+                          ,(ji-simple-note ji-fundamental ji-duration)
+                          ;; legend or empty list
+                          ,@legend)))
+                     (delq #f elts)))
+                   #{ #})
+            }
+            #(if (getOption '(ji show notehead))
+                 ;; Create a temporary voice for the resulting pitch
+                 #{
+                   \new Voice {
+                     % Print resulting pitch on "upper" staff
+                     \change Staff = #(getOption '(ji conf cross-stuff upper-name))
+                     % Adjust horizontal position (for differing notehead styles
+                     % to enable cross staff
+                     \once \pushNC
+                     % Produce "chord" with pitch and legend
+                     #(make-music
+                       'EventChord
+                       'elements
+                       (let
+                        ((elts
+                          `(
+                             ,(ji-note pitch-effective ji-duration)
+                             ,@(ji-legend ratio cent)
+                             )))
+                        (delq #f elts)))
+                   }
+                 #})
+          >>
+        #}
+        ;; Cross staff is not selected:
+        ;; Produce a single-staff chord
+        (make-music
+         'EventChord
+         'elements
+         (let
+          ((elts
+            `(
+               ;; Optionally display fundamental and resulting pitch
+               ,(if (getOption '(ji show fundamental))
+                    (ji-simple-note ji-fundamental ji-duration)
+                    #f)
+               ,(if (getOption '(ji show notehead))
+                    (ji-note pitch-effective ji-duration)
+                    #f)
+               ,@(ji-legend ratio cent)
+               )))
+          (delq #f elts)))
+        )))
