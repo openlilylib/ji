@@ -44,6 +44,8 @@
 % Display resulting note with harmonics note head
 \registerOption ji.show.notehead-style #'default
 
+\registerOption ji.conf.use-color ##f
+
 % Necessary to use cross staff stems with fundamental/result notation
 \registerOption ji.conf.use-cross-staff ##f
 

@@ -119,15 +119,38 @@ pushNC =
     ;; remove empty expressions
     (delq #f artics)))
 
+#(define (cent-color cent)
+   (list 1 0 0)
+     )
+
+% Produce a color based on the cent detune.
+% Positive detunes color increasingly red
+% while negative colors produce shades of blue
+#(define (cent->color cent)
+   (let
+    ((r (if (> cent 0)
+            (sqrt (/ cent 50.0))
+            0.0))
+     (b (if (< cent 0)
+            (sqrt (* -1 (/ cent 50.0)))
+            0.0)))
+    (list r 0.0 b)))
+
+
 % Generate set of tweaks applying to the JI note
 % Controlled by options
-#(define (ji-tweaks)
+#(define (ji-tweaks ratio cent)
    (let
     ((tweaks
       (list
        ;; define notehead style
        (cons (cons 'NoteHead 'style)
          (getOption '(ji show notehead-style)))
+       (if (getOption '(ji conf use-color))
+           (let 
+            ((col (cent->color cent)))
+            (cons (cons 'NoteHead 'color) col))
+           #f)
        ;; If we're on the upper part of a cross staff chord
        ;; stem should always point upwards
        ;
@@ -154,8 +177,8 @@ pushNC =
     'duration duration))
 
 % Return a JI NoteEvent with styling
-#(define (ji-note pitch dur)
-   (ji-produce-note pitch dur (ji-tweaks)))
+#(define (ji-note pitch dur ratio cent)
+   (ji-produce-note pitch dur (ji-tweaks ratio cent)))
 
 % Return a simple NoteEvent
 #(define (ji-simple-note pitch dur)
@@ -250,7 +273,7 @@ jiNote =
                        (let
                         ((elts
                           `(
-                             ,(ji-note pitch-effective ji-duration)
+                             ,(ji-note pitch-effective ji-duration ratio cent)
                              ,@(ji-legend ratio cent)
                              )))
                         (delq #f elts)))
@@ -271,7 +294,7 @@ jiNote =
                     (ji-simple-note ji-fundamental ji-duration)
                     #f)
                ,(if (getOption '(ji show notehead))
-                    (ji-note pitch-effective ji-duration)
+                    (ji-note pitch-effective ji-duration ratio cent)
                     #f)
                ,@(ji-legend ratio cent)
                )))
