@@ -32,11 +32,18 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Underlying mathematics
 
+% Convert a ratio to a floating point octave representation.
+% A ratio of 2/1 will result in one octave (= 1), 4/1 in two octaves etc.
+% Different representations such as semitones or cents should be calculated
+% from here.
+#(define (ratio->octaves ratio)
+   (/ (log ratio) (log 2)))
+
 % Convert a ratio to a floating point step representation.
 % The integer part is the number of semitones above the fundamental,
 % the fractional part is the fraction of a semitone
-#(define (ratio->step ratio)
-   (* 12 (/ (log ratio) (log 2))))
+#(define (ratio->semitones ratio)
+   (* 12 (ratio->octaves ratio)))
 
 % Convert a ratio and return a pair with
 % - the pitch in semitones
@@ -45,7 +52,7 @@
 % in cents -49 < cent < 49.
 #(define (ratio->step-deviation ratio)
    (let*
-    ((step-cent (ratio->step ratio))
+    ((step-cent (ratio->semitones ratio))
      ;; truncate the floating point number to the nearest integer (scale step)
      (step (inexact->exact (round step-cent)))
      ;; determine the cent deviation and truncate to an integer
