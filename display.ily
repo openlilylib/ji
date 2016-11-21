@@ -220,7 +220,7 @@ jiNote =
     ;; note as pair of semitone-interval and cent deviation
     ((ji-event (ratio->step/cent (/ (car ratio) (cdr ratio))))
      ;; LilyPond pitch as defined by the ratio
-     (pitch-ratio (semitones->pitch (car ji-event)))
+     (pitch-ratio (steps->pitch (car ji-event)))
      ;; LilyPond pitch relative to the current fundamental
      (pitch-effective
       (ly:pitch-transpose
@@ -251,7 +251,7 @@ jiNote =
                       (elts
                        `(
                           ;; fundamental pitch
-                          ,(ji-simple-note 
+                          ,(ji-simple-note
                             (getOption '(ji state fundamental))
                             (getOption '(ji state duration)))
                           ;; legend or empty list
@@ -275,7 +275,7 @@ jiNote =
                        (let
                         ((elts
                           `(
-                             ,(ji-note pitch-effective 
+                             ,(ji-note pitch-effective
                                 (getOption '(ji state duration)) ratio cent)
                              ,@(ji-legend ratio cent)
                              )))
@@ -294,12 +294,12 @@ jiNote =
             `(
                ;; Optionally display fundamental and resulting pitch
                ,(if (getOption '(ji show fundamental))
-                    (ji-simple-note 
+                    (ji-simple-note
                      (getOption '(ji state fundamental))
                      (getOption '(ji state duration)))
                     #f)
                ,(if (getOption '(ji show notehead))
-                    (ji-note pitch-effective 
+                    (ji-note pitch-effective
                       (getOption '(ji state duration)) ratio cent)
                     #f)
                ,@(ji-legend ratio cent)

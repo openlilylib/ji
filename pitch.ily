@@ -42,7 +42,10 @@ jiFundamental =
 % Map the semitone returned by ratio->step-deviation
 % to a LilyPond pitch definition.
 % This is based on the middle c and has to be transposed later
-#(define (semitones->pitch semitone)
+% TODO:
+% Make this work with alternative scales as well.
+% That should be based on the option ji.conf.steps-per-whole-tone.
+#(define (steps->pitch semitone)
    (let
      ;; two lists defining the 12 steps within the octave
      ;;       c  cis  d  dis  e  f  fis  g  as   a  bes   b
