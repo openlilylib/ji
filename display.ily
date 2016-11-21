@@ -147,7 +147,7 @@ pushNC =
        (cons (cons 'NoteHead 'style)
          (getOption '(ji show notehead-style)))
        (if (getOption '(ji conf use-color))
-           (let 
+           (let
             ((col (cent->color cent)))
             (cons (cons 'NoteHead 'color) col))
            #f)
@@ -218,7 +218,7 @@ jiNote =
 
    (let*
     ;; note as pair of semitone-interval and cent deviation
-    ((ji-event (ratio->step-deviation (/ (car ratio) (cdr ratio))))
+    ((ji-event (ratio->step/cent (/ (car ratio) (cdr ratio))))
      ;; LilyPond pitch as defined by the ratio
      (pitch-ratio (semitones->pitch (car ji-event)))
      ;; LilyPond pitch relative to the current fundamental

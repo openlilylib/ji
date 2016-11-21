@@ -50,7 +50,7 @@
 % - the cent deviation above or below (rounded)
 % Rounds to the nearest semitone and gives the deviation
 % in cents -49 < cent < 49.
-#(define (ratio->step-deviation ratio)
+#(define (ratio->step/cent ratio)
    (let*
     ((step-cent (ratio->semitones ratio))
      ;; truncate the floating point number to the nearest integer (scale step)
