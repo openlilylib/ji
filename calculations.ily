@@ -42,8 +42,9 @@
 % Convert a ratio to a floating point step representation.
 % The integer part is the number of semitones above the fundamental,
 % the fractional part is the fraction of a semitone
-#(define (ratio->semitones ratio)
-   (* 12 (ratio->octaves ratio)))
+#(define (ratio->steps ratio)
+   (* (* 6 (getOption '(ji conf steps-per-whole-tone)))
+     (ratio->octaves ratio)))
 
 % Convert a ratio and return a pair with
 % - the pitch in semitones
@@ -52,7 +53,7 @@
 % in cents -49 < cent < 49.
 #(define (ratio->step/cent ratio)
    (let*
-    ((step-cent (ratio->semitones ratio))
+    ((step-cent (ratio->steps ratio))
      ;; truncate the floating point number to the nearest integer (scale step)
      (step (inexact->exact (round step-cent)))
      ;; determine the cent deviation and truncate to an integer

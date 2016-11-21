@@ -46,6 +46,12 @@
 
 \registerOption ji.conf.use-color ##f
 
+% Define what scale is the base for displaying pitches.
+% Default is the chromatic scale, defined by 2 (whole tone / 2 = semitone).
+% For a quarter tone scale one would set this option to 4
+% NOTE: Anything except 2 is not supported yet.
+\registerOption ji.conf.steps-per-whole-tone 2
+
 % Necessary to use cross staff stems with fundamental/result notation
 \registerOption ji.conf.use-cross-staff ##f
 
