@@ -72,7 +72,7 @@ pushNC =
 %
 % TODO: Make configurable and nicer in general
 #(define (format-cent cent)
-   (format "(~@f)" cent))
+   (format "(~@f)" (round cent)))
 
 #(define (format-ratio ratio)
    (format "(~a/~a)" (car ratio) (cdr ratio)))

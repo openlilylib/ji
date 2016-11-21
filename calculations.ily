@@ -56,6 +56,6 @@
     ((step-cent (ratio->steps ratio))
      ;; truncate the floating point number to the nearest integer (scale step)
      (step (inexact->exact (round step-cent)))
-     ;; determine the cent deviation and truncate to an integer
-     (cent (inexact->exact (round (* 100 (- step-cent step))))))
+     ;; determine the cent deviation
+     (cent (* 100 (- step-cent step))))
     (cons step cent)))
