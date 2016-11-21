@@ -33,17 +33,10 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Configuration
 
-% Maintain the fundamental, initialize to a default middle c
-#(define ji-fundamental (ly:make-pitch 0 0 0))
-
 % Change the fundamental, active for following notes
 jiFundamental =
 #(define-void-function (fund) (ly:pitch?)
-   (set! ji-fundamental fund))
-
-% Maintain a current duration to be used when no duration is given,
-% initialize to quarter notes (like with regular pitches without duration)
-#(define ji-duration (ly:make-duration 2))
+   (setOption '(ji state fundamental) fund))
 
 
 % Map the semitone returned by ratio->step-deviation

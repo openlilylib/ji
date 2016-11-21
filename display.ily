@@ -208,13 +208,13 @@ jiNote =
        ;; at least one optional argument has been given
        (if (ly:pitch? fund)
            ;; set new fundamental pitch
-           (set! ji-fundamental fund)
+           (setOption '(ji state fundamental) fund)
            ;; "first" (i.e. only) optional argument is a duration:
            ;; set the new duration
-           (set! ji-duration fund)))
+           (setOption '(ji state duration) fund)))
    (if dur
        ;; second optional argument is present: set duration
-       (set! ji-duration dur))
+       (setOption '(ji state duration) dur))
 
    (let*
     ;; note as pair of semitone-interval and cent deviation
@@ -225,7 +225,7 @@ jiNote =
      (pitch-effective
       (ly:pitch-transpose
        pitch-ratio
-       ji-fundamental))
+       (getOption '(ji state fundamental))))
      ;; cent deviation as integer
      (cent (cdr ji-event)))
 
@@ -251,7 +251,9 @@ jiNote =
                       (elts
                        `(
                           ;; fundamental pitch
-                          ,(ji-simple-note ji-fundamental ji-duration)
+                          ,(ji-simple-note 
+                            (getOption '(ji state fundamental))
+                            (getOption '(ji state duration)))
                           ;; legend or empty list
                           ,@legend)))
                      (delq #f elts)))
@@ -273,7 +275,8 @@ jiNote =
                        (let
                         ((elts
                           `(
-                             ,(ji-note pitch-effective ji-duration ratio cent)
+                             ,(ji-note pitch-effective 
+                                (getOption '(ji state duration)) ratio cent)
                              ,@(ji-legend ratio cent)
                              )))
                         (delq #f elts)))
@@ -291,10 +294,13 @@ jiNote =
             `(
                ;; Optionally display fundamental and resulting pitch
                ,(if (getOption '(ji show fundamental))
-                    (ji-simple-note ji-fundamental ji-duration)
+                    (ji-simple-note 
+                     (getOption '(ji state fundamental))
+                     (getOption '(ji state duration)))
                     #f)
                ,(if (getOption '(ji show notehead))
-                    (ji-note pitch-effective ji-duration ratio cent)
+                    (ji-note pitch-effective 
+                      (getOption '(ji state duration)) ratio cent)
                     #f)
                ,@(ji-legend ratio cent)
                )))

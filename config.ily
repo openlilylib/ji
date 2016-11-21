@@ -46,6 +46,15 @@
 
 \registerOption ji.conf.use-color ##f
 
+% Maintain the current fundamental and duration, behaviour
+% similar to regular notes. Make them default to LilyPond's
+% note defaults (middle c and quarter note).
+% NOTE: This is completely monophonic as the data is maintained
+% in these global options. Any kind of polyphonic behaviour has
+% yet to be implemented.
+\registerOption ji.state.fundamental #(ly:make-pitch 0 0 0)
+\registerOption ji.state.duration 4
+
 % Define what scale is the base for displaying pitches.
 % Default is the chromatic scale, defined by 2 (whole tone / 2 = semitone).
 % For a quarter tone scale one would set this option to 4
