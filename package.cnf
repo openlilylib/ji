@@ -1,0 +1,19 @@
+#
+# openLilyLib/ji configuration
+#
+
+name: ji
+display-name: Just Intonation
+short-description: Encoding and displaying Just Intonation
+description: <
+  A Package providing input commands to encode pitches in Just Intonation
+  using fundamentals and ratios. Encoded pitches can be displayed in various
+  ways.
+  >
+oll-core: 0.0.0
+maintainers: [
+  Urs Liska <ul@openlilylib.org>
+  ]
+version: 0.0.1
+license: GPL3
+repository:  https://github.com/openlilylib/ji/
