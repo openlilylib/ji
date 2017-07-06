@@ -34,8 +34,8 @@
   subtitle = "Notation with openLilyLib/ji"
 }
 
-% Activate the Just Intonation package
-\include "ji/package.ily"
+\include "oll-core/package.ily"
+\loadPackage ji
 
 \markup \vspace #1
 \markup "Ratios over middle c, printing cent deviation"
