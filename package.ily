@@ -29,19 +29,9 @@
 
 \version "2.19.50"
 
-#(ly:set-option 'relative-includes #t)
 \include "oll-core/package.ily"
 
-\registerPackage ji \with {
-  maintainers = "Urs Liska <ul@openlilylib.org>"
-  version = "0.1.0"
-  short-description = "Display Just Intonation with GNU LilyPond"
-  description = "TODO!"
-
-  lilypond-min-version = "2.19.22" % To be tested!
-}
-
-\include "config.ily"
-\include "calculations.ily"
-\include "pitch.ily"
-\include "display.ily"
+\include "internal/config.ily"
+\include "internal/calculations.ily"
+\include "internal/pitch.ily"
+\include "internal/display.ily"
