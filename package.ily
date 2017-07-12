@@ -29,8 +29,6 @@
 
 \version "2.19.50"
 
-\include "oll-core/package.ily"
-
 \include "internal/config.ily"
 \include "internal/calculations.ily"
 \include "internal/pitch.ily"
